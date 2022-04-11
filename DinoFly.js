@@ -77,25 +77,25 @@ function setMoveSpeed(_speed) {
         setSpeed(_speed * mc.thePlayer.moveForward);
     }
 }
-function Forward(_x,_z) {
+function Forward(_s) {
     var dir = Math.radian(mc.thePlayer.rotationYaw);
-    mc.thePlayer.motionX += -Math.sin(dir) * _x;
-    mc.thePlayer.motionZ += Math.cos(dir) * _z;
+    mc.thePlayer.motionX += -Math.sin(dir) * _s;
+    mc.thePlayer.motionZ += Math.cos(dir) * _s;
 }
-function Right(_x,_z) {
+function Right(_s) {
     var dir = Math.radian(mc.thePlayer.rotationYaw + 90);
-    mc.thePlayer.motionX += -Math.sin(dir) * _x;
-    mc.thePlayer.motionZ += Math.cos(dir) * _z;
+    mc.thePlayer.motionX += -Math.sin(dir) * _s;
+    mc.thePlayer.motionZ += Math.cos(dir) * _s;
 }
-function Back(_x,_z) {
+function Back(_s) {
     var dir = Math.radian(mc.thePlayer.rotationYaw + 180);
-    mc.thePlayer.motionX += -Math.sin(dir) * _x;
-    mc.thePlayer.motionZ += Math.cos(dir) * _z;
+    mc.thePlayer.motionX += -Math.sin(dir) * _s;
+    mc.thePlayer.motionZ += Math.cos(dir) * _s;
 }
-function Left(_x,_z) {
+function Left(_s) {
     var dir = Math.radian(mc.thePlayer.rotationYaw + 270);
-    mc.thePlayer.motionX += -Math.sin(dir) * _x;
-    mc.thePlayer.motionZ += Math.cos(dir) * _z;
+    mc.thePlayer.motionX += -Math.sin(dir) * _s;
+    mc.thePlayer.motionZ += Math.cos(dir) * _s;
 }
 script.registerModule({
     name: "DinoFly",
@@ -107,10 +107,6 @@ script.registerModule({
             name: "Mode",
             default: "Vanilla",
             values: ["Creative","Vanilla","VerusNew","NeruxVace","Minemora","Battleasya"]
-        }),
-        FakeDamage:Setting.boolean({
-            name: "Damage",
-            default: false
         }),
         MotionReset:Setting.boolean({
             name: "MotionReset",
@@ -197,12 +193,6 @@ module.on("enable", function () {
         mc.thePlayer.setPosition(mc.thePlayer.posX, mc.thePlayer.posY - 2, mc.thePlayer.posZ);
         mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ, false));
     }
-    if (module.settings.FakeDamage.get() == true && mc.thePlayer.onGround) {
-        for (var i = 0; i <= 49; i++) {
-            mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX, mc.thePlayer.posY + 0.0650, mc.thePlayer.posZ, false));
-            mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ, i >= 49));
-        }
-    }
 });   
 module.on("packet", function (event) {
     var packet = event.getPacket();
@@ -249,16 +239,16 @@ module.on("update", function () {
                 mc.thePlayer.motionY = 0;
             }
             if (mc.gameSettings.keyBindForward.isKeyDown()) {
-                Forward(module.settings.VanillaSpeed.get(),module.settings.VanillaSpeed.get())
+                Forward(module.settings.VanillaSpeed.get())
             }
             if(mc.gameSettings.keyBindRight.isKeyDown()) {
-                Right(module.settings.VanillaSpeed.get(),module.settings.VanillaSpeed.get())
+                Right(module.settings.VanillaSpeed.get())
             };
             if (mc.gameSettings.keyBindBack.isKeyDown()) {
-                Back(module.settings.VanillaSpeed.get(),module.settings.VanillaSpeed.get())
+                Back(module.settings.VanillaSpeed.get())
             };
             if (mc.gameSettings.keyBindLeft.isKeyDown()) {
-                Left(module.settings.VanillaSpeed.get(),module.settings.VanillaSpeed.get())
+                Left(module.settings.VanillaSpeed.get())
             };
             if (mc.gameSettings.keyBindJump.isKeyDown()) {
                 mc.thePlayer.motionY += module.settings.VanillaVerticalSpeed.get() / 2
@@ -296,16 +286,16 @@ module.on("update", function () {
             mc.thePlayer.motionY = 0;
             if(verustrue == 0) {
             if (mc.gameSettings.keyBindForward.isKeyDown()) {
-                Forward(module.settings.VerusSpeed.get(),module.settings.VerusSpeed.get())
+                Forward(module.settings.VerusSpeed.get())
             }
             if(mc.gameSettings.keyBindRight.isKeyDown()) {
-                Right(module.settings.VerusSpeed.get(),module.settings.VerusSpeed.get())
+                Right(module.settings.VerusSpeed.get())
             };
             if (mc.gameSettings.keyBindBack.isKeyDown()) {
-                Back(module.settings.VerusSpeed.get(),module.settings.VerusSpeed.get())
+                Back(module.settings.VerusSpeed.get())
             };
             if (mc.gameSettings.keyBindLeft.isKeyDown()) {
-                Left(module.settings.VerusSpeed.get(),module.settings.VerusSpeed.get())
+                Left(module.settings.VerusSpeed.get())
             };
             if (mc.gameSettings.keyBindJump.isKeyDown()) {
                 mc.thePlayer.motionY += module.settings.VerusSpeed.get();
