@@ -1,3 +1,6 @@
+/*
+Hycraft Fly From LiquidBounce++
+*/
 var scriptName = "DinoFly";
 var scriptAuthor = "DinoFeng";
 var scriptVersion = "1.0";
@@ -97,6 +100,8 @@ function Left(_s) {
     mc.thePlayer.motionX += -Math.sin(dir) * _s;
     mc.thePlayer.motionZ += Math.cos(dir) * _s;
 }
+var HyTrue = false;
+var hytick = 0;
 script.registerModule({
     name: "DinoFly",
     description: "A Modules make u can fly in survival mode!",
@@ -106,7 +111,7 @@ script.registerModule({
         Mode:Setting.list({
             name: "Mode",
             default: "Vanilla",
-            values: ["Creative","Vanilla","VerusNew","NeruxVace","Minemora","Battleasya"]
+            values: ["Creative","Vanilla","VerusNew","NeruxVace","Minemora","Battleasya","Hycraft"]
         }),
         MotionReset:Setting.boolean({
             name: "MotionReset",
@@ -167,12 +172,20 @@ script.registerModule({
             default: 1,
             min: 1,
             max: 10
+        }),
+        HySpeed:Setting.float({
+            name: "Hycraft-Speed",
+            default: 1,
+            min: 1,
+            max: 5
         })
     }
 }, 
     function (module) {
 module.on("enable", function () {
     ChatP("Beta Version!")
+    HyTrue = false
+    hytick = 0;
     VerusTick = 0;
     verusa = 0;
     MinemoraTick = 0;
@@ -185,6 +198,14 @@ module.on("enable", function () {
     orgx = mc.thePlayer.posX
     orgy = mc.thePlayer.posY
     orgz = mc.thePlayer.posZ
+
+    if(mc.thePlayer.onGround && module.settings.Mode.get() == "Hycraft") {
+        mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX, orgy + 4.5, mc.thePlayer.posZ, false));
+        mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX, orgy, mc.thePlayer.posZ, false));
+        mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX, orgy, mc.thePlayer.posZ, true));
+        mc.thePlayer.setPosition(mc.thePlayer.posX, mc.thePlayer.posY + 0.42, mc.thePlayer.posZ);
+        HyTrue = true
+    }
     if(module.settings.Mode.get() == "VerusNew") {
         verustrue = 1;
     }
@@ -230,7 +251,7 @@ module.on("update", function () {
                     mc.thePlayer.motionY = -module.settings.VanillaBypassMotion.get()
                 }
                 if(VanillaBypassTick >= 3 && VanillaBypassTick < 6) {
-                    mc.thePlayer.motionY = module.settings.VanillaBypassMotion.get()
+                    mc.thePlayer.motionY = module.settings.VanillaBypassMotion.get() / 2
                 }
                 if(VanillaBypassTick >= 6) {
                     VanillaBypassTick = 0;
@@ -345,6 +366,41 @@ module.on("update", function () {
                 }
             }
             break;
+        case "Hycraft":
+            if(HyTrue) {
+                hytick++;
+                if(hytick == 0) {
+                    mc.timer.timerSpeed = 0.85;
+                } else if(hytick == 1) {
+                    mc.timer.timerSpeed = 1;
+                } else if(hytick == 2) {
+                    mc.timer.timerSpeed = 0.85;
+                } else if(hytick == 3) {
+                    mc.timer.timerSpeed = 1;
+                } else if(hytick >= 4) {
+                    mc.timer.timerSpeed = 0.85;
+                    hytick = 0;
+                }
+                if (mc.gameSettings.keyBindForward.isKeyDown()) {
+                    Forward(module.settings.HySpeed.get())
+                }
+                if(mc.gameSettings.keyBindRight.isKeyDown()) {
+                    Right(module.settings.HySpeed.get())
+                };
+                if (mc.gameSettings.keyBindBack.isKeyDown()) {
+                    Back(module.settings.HySpeed.get())
+                };
+                if (mc.gameSettings.keyBindLeft.isKeyDown()) {
+                    Left(module.settings.HySpeed.get())
+                };
+                if (mc.gameSettings.keyBindJump.isKeyDown()) {
+                    mc.thePlayer.motionY += module.settings.HySpeed.get() / 2
+                };
+                if (mc.gameSettings.keyBindSneak.isKeyDown()) {
+                    mc.thePlayer.motionY -= module.settings.HySpeed.get() / 2
+                }
+                mc.thePlayer.motionY = 0;
+            }        
     }
 });
 module.on("disable", function () {
