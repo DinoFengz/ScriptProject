@@ -1,8 +1,3 @@
-/*
-
-Get Battleasya Fly From Isaiah Script!
-
-*/
 var scriptName = "DinoFly";
 var scriptAuthor = "DinoFeng";
 var scriptVersion = "1.0";
