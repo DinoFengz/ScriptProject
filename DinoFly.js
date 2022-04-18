@@ -3,11 +3,11 @@ Hycraft Fly From LiquidBounce++
 */
 var scriptName = "DinoFly";
 var scriptAuthor = "DinoFeng";
-var scriptVersion = "1.0";
+var scriptVersion = "1.1";
 var scriptGithub = "https://github.com/DinoFengz/ScriptProject";
 var script = registerScript({
     name: "DinoFly",
-    version: "1.0",
+    version: "1.1",
     authors: ["DinoFeng"]
 });
 var C02 = Java.type("net.minecraft.network.play.client.C02PacketUseEntity");
@@ -48,6 +48,7 @@ var orgy = 0;
 var orgz = 0;
 var verustrue = 0;
 var verusa = 0;
+var Vulcan2Ready = false
 function ChatP(_Chat) {
     Chat.print("§8[§e§lDinoFly§8] §f§l" + _Chat)
 }
@@ -102,6 +103,10 @@ function Left(_s) {
 }
 var HyTrue = false;
 var hytick = 0;
+var Vulcan2T = 0;
+var Vulcantick = 0;
+var Vulcan2Ready = false
+var vulcan2done = false
 script.registerModule({
     name: "DinoFly",
     description: "A Modules make u can fly in survival mode!",
@@ -111,7 +116,13 @@ script.registerModule({
         Mode:Setting.list({
             name: "Mode",
             default: "Vanilla",
-            values: ["Creative","Vanilla","VerusNew","NeruxVace","Minemora","Battleasya","Hycraft"]
+            values: ["Creative","Vanilla","VerusNew","Vulcan","Vulcan2","NeruxVace","Minemora","Battleasya_Skyblock/Survival_Expolit","Hycraft","Tester"]
+        }),
+        TesterSpeed:Setting.float({
+            name: "TesterSpeed",
+            default: 1,
+            min: 1,
+            max: 10
         }),
         MotionReset:Setting.boolean({
             name: "MotionReset",
@@ -168,10 +179,22 @@ script.registerModule({
             max: 1
         }),
         BattleasyaSpeed:Setting.float({
-            name: "Battleasya-Speed",
+            name: "Vulcan-Speed",
             default: 1,
             min: 1,
             max: 10
+        }),
+        Vulcan2Speed:Setting.float({
+            name: "Vulcan2-Clip",
+            default: 10,
+            min: 10,
+            max: 20
+        }),
+        Vulcan2HeightSpeed:Setting.float({
+            name: "Vulcan2-ClipHeight",
+            default: 1,
+            min: 1,
+            max: 2
         }),
         HySpeed:Setting.float({
             name: "Hycraft-Speed",
@@ -185,10 +208,14 @@ script.registerModule({
 module.on("enable", function () {
     ChatP("Beta Version!")
     HyTrue = false
+    Vulcan2T = 0;
+    Vulcan2Ready = false
+    vulcan2done = false
     hytick = 0;
     VerusTick = 0;
     verusa = 0;
     MinemoraTick = 0;
+    Vulcantick = 0;
     VanillaBypassTick = 0;
     VanillaBypassTick2 = 0;
     BattleasyaTick = 0
@@ -206,25 +233,54 @@ module.on("enable", function () {
         mc.thePlayer.setPosition(mc.thePlayer.posX, mc.thePlayer.posY + 0.42, mc.thePlayer.posZ);
         HyTrue = true
     }
+    if(module.settings.Mode.get() == "Battleasya_Skyblock/Survival_Expolit") {
+        mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX, orgy + 4.5, mc.thePlayer.posZ, false));
+        mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX, orgy, mc.thePlayer.posZ, false));
+        mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX, orgy, mc.thePlayer.posZ, true));
+        mc.thePlayer.setPosition(mc.thePlayer.posX, mc.thePlayer.posY + 0.42, mc.thePlayer.posZ);
+    }
     if(module.settings.Mode.get() == "VerusNew") {
         verustrue = 1;
     }
-    if(module.settings.Mode.get() == "Battleasya") {
+    if(module.settings.Mode.get() == "Vulcan") {
         mc.timer.timerSpeed = 0.14;
         mc.thePlayer.setPosition(mc.thePlayer.posX, mc.thePlayer.posY - 2, mc.thePlayer.posZ);
         mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX, mc.thePlayer.posY, mc.thePlayer.posZ, false));
     }
+    if(module.settings.Mode.get() == "Vulcan2") {
+        if(mc.thePlayer.onGround) {
+            mc.timer.timerSpeed = 0.1;
+            mc.thePlayer.setPosition(mc.thePlayer.posX, mc.thePlayer.posY - 3, mc.thePlayer.posZ);
+        } else {
+            ChatP("Doesnt OnGround!")
+            module.setState(false)
+        }
+    }
 });   
 module.on("packet", function (event) {
     var packet = event.getPacket();
+    if(module.settings.Mode.get() == "Tester") {
+            TestTick++
+            if(TestTick >= 1) {
+                TestTick = 0;
+                event.cancelEvent()
+            }        
+    }
     if(packet instanceof S08) {
-        if(module.settings.Mode.get() == "Battleasya") {
+        if(module.settings.Mode.get()== "Battleasya_Skyblock/Survival_Expolit") {
+            module.setState(false);
+            ChatP("Successfully!")
+        }
+        if(module.settings.Mode.get() == "Vulcan") {
             BattleasyaTick++
             Chat.print("S08 : " + BattleasyaTick)
-            if(BattleasyaTick > 2) {
+            if(BattleasyaTick > 10) {
                 Chat.print("False")
                 module.setState(false)
             }
+        }
+        if(module.settings.Mode.get() == "Vulcan2") {
+            Vulcan2Ready = true
         }
     }
     if(module.settings.Mode.get() == "VerusNew") {
@@ -239,6 +295,30 @@ module.on("packet", function (event) {
 module.on("update", function () {
     module.tag=module.settings.Mode.get();
     switch (module.settings.Mode.get()) {
+        case "Tester":
+            mc.thePlayer.motionX = 0;
+            mc.thePlayer.motionZ = 0;
+            mc.thePlayer.motionY = 0;
+            if (mc.gameSettings.keyBindForward.isKeyDown()) {
+                Forward(module.settings.TesterSpeed.get())
+            }
+            if(mc.gameSettings.keyBindRight.isKeyDown()) {
+                Right(module.settings.TesterSpeed.get())
+            };
+            if (mc.gameSettings.keyBindBack.isKeyDown()) {
+                Back(module.settings.TesterSpeed.get())
+            };
+            if (mc.gameSettings.keyBindLeft.isKeyDown()) {
+                Left(module.settings.TesterSpeed.get())
+            };
+            if (mc.gameSettings.keyBindJump.isKeyDown()) {
+                mc.thePlayer.motionY += module.settings.TesterSpeed.get() / 2
+            };
+            if (mc.gameSettings.keyBindSneak.isKeyDown()) {
+                mc.thePlayer.motionY -= module.settings.TesterSpeed.get() / 2
+            }
+            mc.timer.timerSpeed = 0.4
+            break;
         case "Creative": 
             mc.thePlayer.capabilities.allowFlying = true;
             break;
@@ -340,8 +420,8 @@ module.on("update", function () {
                 MinemoraTick = 0;
             }
             break;
-        case "Battleasya":
-            if(BattleasyaTick < 3 && BattleasyaTick >= 1) {
+        case "Vulcan":
+            if(BattleasyaTick < 10 && BattleasyaTick >= 1) {
                 mc.timer.timerSpeed = 0.14
                 mc.thePlayer.motionX = 0;
                 mc.thePlayer.motionZ = 0;
@@ -364,6 +444,31 @@ module.on("update", function () {
                 if (mc.gameSettings.keyBindSneak.isKeyDown()) {
                     mc.thePlayer.motionY -= module.settings.BattleasyaSpeed.get();
                 }
+            }
+            break;
+        case "Vulcan2":
+            if(Vulcan2Ready) {
+                clip(module.settings.Vulcan2Speed.get(),module.settings.Vulcan2HeightSpeed.get())
+                Vulcan2T = 1;
+                mc.timer.timerSpeed = 0.5;
+                Vulcan2Ready = false;
+            }
+            if(Vulcan2T == 1) {
+                Vulcantick++
+                if(Vulcantick >= 10) {
+                    mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX , mc.thePlayer.posY , mc.thePlayer.posZ , false))
+                    ChatP("C04")
+                    Vulcantick = 0;
+                }
+            }
+            if(mc.thePlayer.posY > orgy) {
+                vulcan2done = true
+            }
+            if(vulcan2done && mc.thePlayer.onGround) {
+                vulcan2done = false
+                Vulcantick = 0;
+                Vulcan2T = 0;
+                module.setState(false)
             }
             break;
         case "Hycraft":
@@ -409,7 +514,7 @@ module.on("disable", function () {
         mc.thePlayer.capabilities.isFlying = false;
     }
     mc.timer.timerSpeed = 1;
-    if(mc.thePlayer.MotionReset.get()) {
+    if(module.settings.MotionReset.get()) {
         mc.thePlayer.motionX = 0;
         mc.thePlayer.motionZ = 0;
         mc.thePlayer.motionY = 0;
