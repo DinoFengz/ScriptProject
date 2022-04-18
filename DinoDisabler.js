@@ -87,6 +87,9 @@ function Left(_s) {
     mc.thePlayer.motionZ += Math.cos(dir) * _s;
 }
 var bmcTick = 0;
+var tick = 0;
+var C0FTick = 0;
+var battletrue = false
 script.registerModule({
     name: "DinoDisabler",
     description: "Disabling anticheat",
@@ -96,7 +99,7 @@ script.registerModule({
         Mode:Setting.list({
             name: "Mode",
             default: "MinemoraCombat",
-            values: ["MinemoraCombat","VerusCombat","BattleasyaCombat"]
+            values: ["MinemoraCombat","VerusSemi","Basic"]
         }),
         Debug:Setting.boolean({
             name: "Debug",
@@ -107,7 +110,6 @@ script.registerModule({
     function (module) {
 module.on("enable", function () {
     ChatP("Beta Version!")
-    bmcTick = 0;
 });   
 module.on("attack", function () {
     switch(module.settings.Mode.get()) {
@@ -131,7 +133,7 @@ module.on("packet", function (event) {
             }
             break;
 
-        case "VerusCombat":
+        case "VerusSemi":
             if(packet instanceof C0F) {
                 event.cancelEvent()
                 if(module.settings.Debug.get()) {
@@ -144,28 +146,28 @@ module.on("packet", function (event) {
                     ChatP("Packet C0BPacketEntityAction")
                 }
             }
-            if(packet instanceof C03) {
-                bmcTick++
-                if(bmcTick >= 20) {
-                    event.cancelEvent()
-                    if(module.settings.Debug.get()) {
-                        ChatP("Packet C03PacketPlayer")
-                    }
-                    bmcTick = 0;
-                }
-            }
             break;
-        case "BattleasyaCombat":
-            if(packet instanceof C0B) {
+        case "Basic":
+            if(packet instanceof C00 || packet instanceof C0F) {
                 event.cancelEvent()
                 if(module.settings.Debug.get()) {
-                    ChatP("Packet C0BPacketEntityAction")
+                    ChatP("Disabled")
                 }
             }
             break;
     }
+    if(C0FTick >= 30) {
+        C0FTick = 0;
+        ChatP("Packet C0FPacketConfirmTransaction")
+        mc.thePlayer.sendQueue.addToSendQueue(new C0F);
+    }
 });
 module.on("update", function () {
+    tick++
+    if(tick >= 20 && battletrue) {
+        tick = 0;
+        battletrue = false
+    }
     module.tag=module.settings.Mode.get();
     switch (module.settings.Mode.get()) {
     }
