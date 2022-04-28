@@ -58,8 +58,11 @@ var vulcan2done = false
 var MinemoraTick = 0;
 var MinemoraDone = false
 var orgx = 0;
+var HYTick = 0;
 var orgy = 0;
 var orgz = 0;
+var Minemora2True = false
+var Hycraft2Ready = false
 var VulcanNewTick = 0;
 script.on("load", function() {
     ChatP("First: Thx For you using our script!")
@@ -73,7 +76,7 @@ script.registerModule({
     category: "Movement",
     tag: "Mode",
     settings: {
-        Mode:Setting.list({name: "Mode",default: "Vanilla",values: ["Creative","Vanilla","Minemora","Vulcan"]}),
+        Mode:Setting.list({name: "Mode",default: "Vanilla",values: ["Creative","Vanilla","Minemora","Vulcan","Minemoraa"]}),
         VulcanMode:Setting.list({name: "VulcanMode", default: "Normal", values: ["Normal","Battleasya","Hycraft"]}),
         MotionReset:Setting.boolean({name: "MotionReset",default: false}),
         VanillaSpeed:Setting.float({name: "Vanilla-Speed",default: 1,min: 1,max: 10}),
@@ -92,6 +95,7 @@ script.registerModule({
         if(module.settings.ToggleMessage.get()) {
             ChatP("You are using 1.0.0 DinoFly Script By DinoFeng!")
         }
+        Hycraft2Ready = false
         VulcanNewTick = 0;
         Vulcan2T = 0;
         Vulcan2Ready = false
@@ -109,6 +113,9 @@ script.registerModule({
                     MinemoraDone = true
                 }
             break;
+            case "minemoraa":
+                Minemora2True = true
+            break;
             case "vulcan":
                 switch(module.settings.VulcanMode.get().toLowerCase()) {
                     case "normal":
@@ -122,10 +129,15 @@ script.registerModule({
                     case "battleasya":
                         if(mc.thePlayer.onGround) {
                             mc.timer.timerSpeed = 0.5;
-                            mc.thePlayer.setPosition(mc.thePlayer.posX , mc.thePlayerposY - 1.2 , mc.thePlayer.posZ)
+                            mc.thePlayer.setPosition(mc.thePlayer.posX , mc.thePlayer.posY - 1.2 , mc.thePlayer.posZ)
                         } else {
                             ChatP("Doesnt OnGround!")
                             module.setState(false)
+                        }
+                    break;
+                    case "hycraft":
+                        if(mc.thePlayer.onGround) {
+                            clip(0,-1)
                         }
                     break;
                 }
@@ -150,6 +162,10 @@ script.registerModule({
                             Vulcan2Ready = true
                             ChatP("Detected")
                         break;
+                        case "hycraft":
+                            Hycraft2Ready = true
+                            ChatP("Detected")
+                        break;
                     }
                 break;
                 case "minemora":
@@ -158,6 +174,11 @@ script.registerModule({
                     }
                 break;
            }
+        }
+        if(module.settings.Mode.get() == "Minemoraa") {
+            if(Minemora2True) {
+                event.cancelEvent()
+            }
         }
     });
     module.on("update", function () {
@@ -173,6 +194,21 @@ script.registerModule({
                 hor(module.settings.VanillaSpeed.get())
                 ver(module.settings.VanillaVerticalSpeed.get())
             break;
+            case "minemoraa":
+                if(Minemora2True) {
+                    if(mc.gameSettings.keyBindSneak.pressed) {
+                        mc.thePlayer.setPosition(mc.thePlayer.posX , mc.thePlayer.posY , mc.thePlayer.posZ)
+                        mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX , mc.thePlayer.posY , mc.thePlayer.posZ , false))
+                        mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX , mc.thePlayer.posY , mc.thePlayer.posZ , false))
+                        Minemora2True = false
+                        module.setState(false)
+                    }
+                    mc.thePlayer.motionY = 0;
+                    mc.thePlayer.motionX = 0;
+                    mc.thePlayer.motionZ = 0;
+                    hor(1)
+                    ver(1)
+                }
             case "minemora":
                 if(!MinemoraDone) {
                     if(mc.thePlayer.onGround) {
@@ -242,10 +278,11 @@ script.registerModule({
                         }
                     break;
                     case "hycraft":
+                    if(Hycraft2Ready) {
                         VulcanNewTick++
                         if(VulcanNewTick >= 20) {
                             clip(module.settings.VulcanHycraftSpeed.get() * 10,0)
-                            mc.timer.timerSpeed = 0.14
+                            mc.timer.timerSpeed = 0.6
                             VulcanNewTick = 0;
                         } else {
                             if(mc.gameSettings.keyBindJump.pressed) {
@@ -254,11 +291,22 @@ script.registerModule({
                             if(mc.gameSettings.keyBindSneak.pressed) {
                                 clip(0,-1)
                             }
+                            mc.thePlayer.setPosition(mc.thePlayer.posX , mc.thePlayer.posY, mc.thePlayer.posZ)
+                            mc.gameSettings.keyBindForward.pressed = false
+                            mc.gameSettings.keyBindBack.pressed = false
+                            mc.gameSettings.keyBindLeft.pressed = false
+                            mc.gameSettings.keyBindRight.pressed = false
                             mc.timer.timerSpeed = 1
+                            HYTick++
+                            if(HYTick >= 20) {
+                                HYTick = 0;
+                                clip(0,-1)
+                            }
                         }
                         mc.thePlayer.motionX = 0;
                         mc.thePlayer.motionY = 0;
                         mc.thePlayer.motionZ = 0;
+                    }
                     break;
                  }
             break;
@@ -277,6 +325,10 @@ script.registerModule({
         }
     });
     module.on("disable", function () {
+        if(module.settings.Mode.get() == "Minemora2") {
+            Minemora2True = false
+            mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX , mc.thePlayer.posY , mc.thePlayer.posZ , false))
+        }
         if(module.settings.Mode.get() == "Creative") {
             mc.thePlayer.capabilities.allowFlying = false;
             mc.thePlayer.capabilities.isFlying = false;
