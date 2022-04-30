@@ -64,6 +64,10 @@ var orgz = 0;
 var Minemora2True = false
 var Hycraft2Ready = false
 var VulcanNewTick = 0;
+var BattleasyaTick = 0;
+var BattleasyaTick2 = 0;
+var BattleasyaDone = false
+var Battleasya2Done = false
 script.on("load", function() {
     ChatP("First: Thx For you using our script!")
     ChatP("Script Name: " + scriptName)
@@ -76,8 +80,8 @@ script.registerModule({
     category: "Movement",
     tag: "Mode",
     settings: {
-        Mode:Setting.list({name: "Mode",default: "Vanilla",values: ["Creative","Vanilla","Minemora","Vulcan","Minemoraa"]}),
-        VulcanMode:Setting.list({name: "VulcanMode", default: "Normal", values: ["Normal","Battleasya","Hycraft"]}),
+        Mode:Setting.list({name: "Mode",default: "Vanilla",values: ["Creative","Vanilla","Minemora","Vulcan"]}),
+        VulcanMode:Setting.list({name: "VulcanMode", default: "Normal", values: ["Normal","Battleasya","Battleasya2","Hycraft"]}),
         MotionReset:Setting.boolean({name: "MotionReset",default: false}),
         VanillaSpeed:Setting.float({name: "Vanilla-Speed",default: 1,min: 1,max: 10}),
         VanillaVerticalSpeed:Setting.float({name: "Vanilla-VerticalSpeed",default: 1,min: 1,max: 10}),
@@ -85,9 +89,13 @@ script.registerModule({
         MinemoraBoostHeight:Setting.float({name: "Minemora-BoostMotion",default: 1,min: 0,max: 1}),
         MinemoraMotionDown:Setting.float({name: "Minemora-MotionDown",default: 0.085,min: 0,max: 1}),
         VulcanNormalSpeed:Setting.float({name: "Vulcan-Normal-Speed",default: 1,min: 1,max: 10}),
-        VulcanBattleasyaSpeed:Setting.float({name: "Vulcan-Battleasya-Clip",default: 10,min: 10,max: 20}),
-        VulcanBattleasyaHeightSpeed:Setting.float({name: "Vulcan-Battleasya-ClipHeight",default: 1,min: 1,max: 2}),
-        VulcanHycraftSpeed:Setting.float({name: "Vulcan-Hycraft-Speed",default: 1,min: 1,max: 10}),
+        VulcanBattleasyaSpeed:Setting.float({name: "Battleasya-Clip",default: 8,min: 1,max: 10}),
+        VulcanBattleasyaHeightSpeed:Setting.float({name: "Battleasya-ClipHeight",default: 8,min: 1,max: 10}),
+        VulcanBattleasya2V:Setting.float({name: "Battleasya2-VBoost",default: 1,min: 1,max: 10}),
+        VulcanBattleasya2H:Setting.float({name: "Battleasya2-HBoost",default: 8,min: 1,max: 10}),
+        VulcanHycraftSpeed:Setting.float({name: "Hycraft-Speed",default: 1,min: 1,max: 10}),
+        VulcanHycraftDelay:Setting.float({name: "Hycraft-Delay",default: 1,min: 1,max: 10}),
+        VulcanHycraftBypass:Setting.boolean({name: "Hycraft-Bypass",default: true}),
         ToggleMessage:Setting.boolean({name: "ToggleMessage",default: true})
     }
 }, function (module) {
@@ -95,6 +103,10 @@ script.registerModule({
         if(module.settings.ToggleMessage.get()) {
             ChatP("You are using 1.0.0 DinoFly Script By DinoFeng!")
         }
+        BattleasyaTick = 0;
+        BattleasyaTick2 = 0;
+        BattleasyaDone = false
+        Battleasya2Done = false
         Hycraft2Ready = false
         VulcanNewTick = 0;
         Vulcan2T = 0;
@@ -117,8 +129,8 @@ script.registerModule({
                 Minemora2True = true
             break;
             case "vulcan":
-                switch(module.settings.VulcanMode.get().toLowerCase()) {
-                    case "normal":
+                switch(module.settings.VulcanMode.get()) {
+                    case "Normal":
                         if(mc.thePlayer.onGround) {
                             mc.timer.timerSpeed = 0.14;
                             clip(0,-2)
@@ -126,7 +138,7 @@ script.registerModule({
                             VulcanTick = 1;
                         }
                     break;
-                    case "battleasya":
+                    case "Battleasya":
                         if(mc.thePlayer.onGround) {
                             mc.timer.timerSpeed = 0.5;
                             mc.thePlayer.setPosition(mc.thePlayer.posX , mc.thePlayer.posY - 1.2 , mc.thePlayer.posZ)
@@ -135,7 +147,15 @@ script.registerModule({
                             module.setState(false)
                         }
                     break;
-                    case "hycraft":
+                    case "Battleasya2":
+                        if(mc.thePlayer.onGround) {
+                            clip(0,-2)
+                        } else {
+                            ChatP("Doesnt OnGround!")
+                            module.setState(false)
+                        }
+                    break;
+                    case "Hycraft":
                         if(mc.thePlayer.onGround) {
                             clip(0,-1)
                         }
@@ -149,8 +169,8 @@ script.registerModule({
         if(packet instanceof S08) {
             switch(module.settings.Mode.get().toLowerCase()) {
                 case "vulcan":
-                    switch(module.settings.VulcanMode.get().toLowerCase()) {
-                        case "normal":
+                    switch(module.settings.VulcanMode.get()) {
+                        case "Normal":
                             VulcanTick++
                             ChatP("S08 : " + VulcanTick)
                             if(VulcanTick > 10) {
@@ -158,11 +178,15 @@ script.registerModule({
                                 module.setState(false)
                             }
                         break;
-                        case "battleasya":
+                        case "Battleasya":
                             Vulcan2Ready = true
                             ChatP("Detected")
                         break;
-                        case "hycraft":
+                        case "Battleasya2":
+                            BattleasyaDone = true
+                            ChatP("Detected")
+                        break;
+                        case "Hycraft":
                             Hycraft2Ready = true
                             ChatP("Detected")
                         break;
@@ -249,8 +273,8 @@ script.registerModule({
                 }
             break;
             case "vulcan":
-                switch(module.settings.VulcanMode.get().toLowerCase()) {
-                    case "normal":
+                switch(module.settings.VulcanMode.get()) {
+                    case "Normal":
                         if(VulcanTick < 10 && VulcanTick > 0) {
                             mc.timer.timerSpeed = 0.14;
                             mc.thePlayer.motionX = 0;
@@ -262,25 +286,57 @@ script.registerModule({
                             ver(module.settings.VulcanNormalSpeed.get())
                         }
                     break;
-                    case "battleasya":
+                    case "Battleasya":
                         if(Vulcan2Ready) {
                             clip(module.settings.VulcanBattleasyaSpeed.get(),module.settings.VulcanBattleasyaHeightSpeed.get())
                             Vulcan2T = 1;
-                            mc.timer.timerSpeed = 0.5
+                            mc.timer.timerSpeed = 1
                             Vulcan2Ready = false
                         }
                         if(Vulcan2T == 1) {
+                            mc.gameSettings.keyBindForward.pressed = true
                             Vulcan2Tick++
-                            if(Vulcan2Tick>=10) {
-                                mc.thePlayer.sendQueue.addToSendQueue(new C04(mc.thePlayer.posX , mc.thePlayer.posY , mc.thePlayer.posZ , false))
+                            if(Vulcan2Tick >= 3 && mc.thePlayer.fallDistance >= 2) {
+                                mc.thePlayer.fallDistance = 0;
+                                mc.thePlayer.motionY = 0.1
                                 Vulcan2Tick = 0;
+                            }
+                            if(mc.thePlayer.onGround) {
+                                mc.gameSettings.keyBindForward.pressed = false
+                                module.setState(false)
                             }
                         }
                     break;
-                    case "hycraft":
+                    case "Battleasya2":
+                        if(BattleasyaDone) {
+                            var yaw = Math.radian(mc.thePlayer.rotationYaw);
+                            var x = -Math.sin(yaw) * module.settings.VulcanBattleasya2H.get();
+                            var z = Math.cos(yaw) * module.settings.VulcanBattleasya2H.get();
+                            mc.thePlayer.motionX = x
+                            mc.thePlayer.motionY = module.settings.VulcanBattleasya2V.get()
+                            mc.thePlayer.motionZ = z
+                            BattleasyaDone = false
+                            Battleasya2Done = true
+                        }
+                        if(Battleasya2Done) {
+                            BattleasyaTick++
+                            BattleasyaTick2++
+                            if(BattleasyaTick >= 2) {
+                                clip(0,0)
+                                BattleasyaTick = 0
+                            }
+                            if(BattleasyaTick2 >= 10) {
+                                mc.thePlayer.motionX = 0;
+                                mc.thePlayer.motionZ = 0;
+                                BattleasyaTick2 = false
+                                module.setState(false)
+                            }
+                        }
+                    break;
+                    case "Hycraft":
                     if(Hycraft2Ready) {
                         VulcanNewTick++
-                        if(VulcanNewTick >= 20) {
+                        if(VulcanNewTick >= module.settings.VulcanHycraftDelay.get() * 20) {
                             clip(module.settings.VulcanHycraftSpeed.get() * 10,0)
                             mc.timer.timerSpeed = 0.6
                             VulcanNewTick = 0;
@@ -297,10 +353,12 @@ script.registerModule({
                             mc.gameSettings.keyBindLeft.pressed = false
                             mc.gameSettings.keyBindRight.pressed = false
                             mc.timer.timerSpeed = 1
-                            HYTick++
-                            if(HYTick >= 20) {
-                                HYTick = 0;
-                                clip(0,-1)
+                            if(module.settings.VulcanHycraftBypass.get()) {
+                                HYTick++
+                                if(HYTick >= 20) {
+                                    HYTick = 0;
+                                    clip(0,-1)
+                                }
                             }
                         }
                         mc.thePlayer.motionX = 0;
@@ -335,7 +393,7 @@ script.registerModule({
         }
         mc.thePlayer.speedInAir = 0.02
         mc.timer.timerSpeed = 1;
-        if(module.settings.MotionReset.get()) {
+        if(module.settings.MotionReset.get() && module.settings.VulcanMode.get() != "Battleasya2") {
             mc.thePlayer.motionX = 0;
             mc.thePlayer.motionZ = 0;
             mc.thePlayer.motionY = 0;
